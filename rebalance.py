@@ -13,50 +13,55 @@ def get_prices_amount(prices, amounts):
     return prices_amount, total_value
 
 
+date = '2023-03-01'  # start date
+
 # 미국 주식 특별
 tickers_1 = ['O', 'TLT', 'LQD']
 amounts_1 = [37, 35, 8]
-prices_1 = yf.download(tickers_1, '2023-03-01')['Adj Close'].tail(1)[tickers_1]
+prices_1 = yf.download(tickers_1, date)['Adj Close'].tail(1)[tickers_1]
 prices_amount_1, sum_1 = get_prices_amount(prices_1, amounts_1)
 
 # 미국 주식
 tickers_2 = ['CVX', 'JPM', 'JNJ', 'VZ', 'MMM', 'PEP', 'SBUX']
 amounts_2 = [5, 6, 5, 19, 7, 4, 7]
-prices_2 = yf.download(tickers_2, '2023-03-01')['Adj Close'].tail(1)[tickers_2]
+prices_2 = yf.download(tickers_2, date)['Adj Close'].tail(1)[tickers_2]
 prices_amount_2, sum_2 = get_prices_amount(prices_2, amounts_2)
 
 
 # Load the exchange rate data
 ticker_symbol = 'USDKRW=X'
-exchange_rate = yf.download(ticker_symbol, '2023-03-01')['Adj Close'].tail(1)[0]
+exchange_rate = yf.download(ticker_symbol, date)['Adj Close'].tail(1)[0]
 
 
 # S&P500, KOSPI
 korean_tickers_1 = ['360200.KS', '361580.KS']
 korean_amounts_1 = [225, 87]
-korean_prices_1 = yf.download(korean_tickers_1, '2023-03-01')['Adj Close'].tail(1)[korean_tickers_1]
+korean_prices_1 = yf.download(korean_tickers_1, date)['Adj Close'].tail(1)[korean_tickers_1]
 korean_prices_1 = korean_prices_1 / exchange_rate   # USD로 보정
 korean_prices_amount_1, korean_sum_1 = get_prices_amount(korean_prices_1, korean_amounts_1)
 
 # 삼성전자우, 현대차우
 korean_tickers_2 = ['005930.KS', '005387.KS']
 korean_amounts_2 = [18, 10]
-korean_prices_2 = yf.download(korean_tickers_2, '2023-03-01')['Adj Close'].tail(1)[korean_tickers_2]
+korean_prices_2 = yf.download(korean_tickers_2, date)['Adj Close'].tail(1)[korean_tickers_2]
 korean_prices_2 = korean_prices_2 / exchange_rate   # USD로 보정
 korean_prices_amount_2, korean_sum_2 = get_prices_amount(korean_prices_2, korean_amounts_2)
 
-total_balance_ISA = 10769422 / exchange_rate
-korean_bonds = total_balance_ISA - korean_sum_1 - korean_sum_2      # 한국 채권 직접 투자
+total_balance_ISA = 10920963 / exchange_rate
+korean_bonds = total_balance_ISA - korean_sum_1 - korean_sum_2 - 22112 / exchange_rate      # 한국 채권 직접 투자
 
-gold = 3051325 / exchange_rate      # 금
+gold = 3035110      # 금
+gold_in_USD = gold / exchange_rate
 
 stock = [sum_2 + korean_sum_2]      # 주식 다 합쳐서
 
-KRW = 0 / exchange_rate      # 현금 얼마 추가?
-USD = 0     # 현금 얼마 추가?
+# gold + ISA + 추가할
+KRW = (2895 + 22112) + 500000      # 현금 얼마 추가?
+KRW_in_USD = KRW / exchange_rate      # 현금 얼마 추가?
+USD = 6.31     # 현금 얼마 추가?
 
-big_portfolio = korean_prices_amount_1 + stock + prices_amount_1 + [korean_bonds] + [gold] + [KRW, USD]
-total_value = sum_1 + sum_2 + korean_sum_1 + korean_sum_2 + korean_bonds + gold + KRW + USD
+big_portfolio = korean_prices_amount_1 + stock + prices_amount_1 + [korean_bonds] + [gold_in_USD] + [KRW_in_USD, USD]
+total_value = sum_1 + sum_2 + korean_sum_1 + korean_sum_2 + korean_bonds + gold_in_USD + KRW_in_USD + USD
 
 # Calculate portions
 portions = [x / total_value for x in big_portfolio]
@@ -87,11 +92,62 @@ for ticker, portion, order_amount in zip(desired_asset, portions, orders):
 import matplotlib.pyplot as plt
 
 # Except Cash (KRW, USD)
-portions = portions[:-2]
-desired_asset = desired_asset[:-2]
+portions = portions
+desired_asset = desired_asset
 
 # plot the graph
 plt.pie(portions, labels = desired_asset, autopct='%1.2f%%')
 
+# Add text outside of the pie chart
+plt.text(-1.5, 1.5, 'Some text')
+
+
 # show the graph
 plt.show()
+
+
+
+from datetime import datetime
+
+history = False
+
+transfer = 0
+
+if history == True : 
+    # Get today's date
+    today = datetime.today()
+    today_str = today.strftime('%Y-%m-%d')
+
+
+    total_value_USD = total_value
+    total_value_KRW = total_value * exchange_rate
+
+    print(exchange_rate)
+    print(total_value_USD)
+    print(total_value_KRW)
+
+
+    # make csv file
+    asset_list = "date", 'S&P 500', 'KOSPI', 'O', 'CVX', 'JPM', 'JNJ', 'VZ', 'MMM', 'PEP', 'SBUX', 'TLT', 'LQD', 'Korean Bonds', 'gold', 'KRW', 'USD', 'total balance USD', 'total balance KRW', 'transfer'
+    amount_list = [today_str] + korean_amounts_1 + amounts_1[:1] + amounts_2 + amounts_1[1:] + [korean_bonds] + [gold] + [KRW, USD] + [total_value_USD, total_value_KRW] + [transfer]
+
+
+    import csv
+
+    # Open a new CSV file for writing
+    with open('data.csv', mode='a', newline='') as file:
+
+        # Create a writer object and write the data as a single row
+        writer = csv.writer(file)
+        
+        writer.writerow(asset_list)
+
+        writer.writerow(amount_list)
+
+
+    import pandas as pd
+
+    # Read the CSV file into a Pandas DataFrame
+    df = pd.read_csv('data.csv').iloc[-1]
+
+    print(df)
