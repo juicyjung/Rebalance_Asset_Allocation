@@ -13,17 +13,17 @@ def get_prices_amount(prices, amounts):
     return prices_amount, total_value
 
 
-date = '2023-03-01'  # start date
+date = '2023-05-04'  # start date
 
 # 미국 주식 특별
 tickers_1 = ['O', 'TLT', 'LQD']
-amounts_1 = [37, 35, 8]
+amounts_1 = [43, 40, 9]
 prices_1 = yf.download(tickers_1, date)['Adj Close'].tail(1)[tickers_1]
 prices_amount_1, sum_1 = get_prices_amount(prices_1, amounts_1)
 
 # 미국 주식
 tickers_2 = ['CVX', 'JPM', 'JNJ', 'VZ', 'MMM', 'PEP', 'SBUX']
-amounts_2 = [5, 6, 5, 19, 7, 4, 7]
+amounts_2 = [6, 6, 6, 23, 9, 5, 8]
 prices_2 = yf.download(tickers_2, date)['Adj Close'].tail(1)[tickers_2]
 prices_amount_2, sum_2 = get_prices_amount(prices_2, amounts_2)
 
@@ -35,30 +35,30 @@ exchange_rate = yf.download(ticker_symbol, date)['Adj Close'].tail(1)[0]
 
 # S&P500, KOSPI
 korean_tickers_1 = ['360200.KS', '361580.KS']
-korean_amounts_1 = [225, 87]
+korean_amounts_1 = [240, 93]
 korean_prices_1 = yf.download(korean_tickers_1, date)['Adj Close'].tail(1)[korean_tickers_1]
 korean_prices_1 = korean_prices_1 / exchange_rate   # USD로 보정
 korean_prices_amount_1, korean_sum_1 = get_prices_amount(korean_prices_1, korean_amounts_1)
 
 # 삼성전자우, 현대차우
-korean_tickers_2 = ['005930.KS', '005387.KS']
+korean_tickers_2 = ['005935.KS', '005387.KS']
 korean_amounts_2 = [18, 10]
 korean_prices_2 = yf.download(korean_tickers_2, date)['Adj Close'].tail(1)[korean_tickers_2]
 korean_prices_2 = korean_prices_2 / exchange_rate   # USD로 보정
 korean_prices_amount_2, korean_sum_2 = get_prices_amount(korean_prices_2, korean_amounts_2)
 
-total_balance_ISA = 10920963 / exchange_rate
-korean_bonds = total_balance_ISA - korean_sum_1 - korean_sum_2 - 22112 / exchange_rate      # 한국 채권 직접 투자
-
-gold = 3035110      # 금
+gold = 3338000      # 금
 gold_in_USD = gold / exchange_rate
 
 stock = [sum_2 + korean_sum_2]      # 주식 다 합쳐서
 
 # gold + ISA + 추가할
-KRW = (2895 + 22112) + 500000      # 현금 얼마 추가?
+KRW = (7 + 0) + 0      # 현금 얼마 추가? or 출금? (마이너스도 가능)
 KRW_in_USD = KRW / exchange_rate      # 현금 얼마 추가?
-USD = 6.31     # 현금 얼마 추가?
+USD = 73.22     # 현금 얼마 추가?
+
+total_balance_ISA = 12210990 / exchange_rate
+korean_bonds = total_balance_ISA - korean_sum_1 - korean_sum_2 - 0 / exchange_rate      # 한국 채권 직접 투자
 
 big_portfolio = korean_prices_amount_1 + stock + prices_amount_1 + [korean_bonds] + [gold_in_USD] + [KRW_in_USD, USD]
 total_value = sum_1 + sum_2 + korean_sum_1 + korean_sum_2 + korean_bonds + gold_in_USD + KRW_in_USD + USD
@@ -99,7 +99,7 @@ desired_asset = desired_asset
 plt.pie(portions, labels = desired_asset, autopct='%1.2f%%')
 
 # Add text outside of the pie chart
-plt.text(-1.5, 1.5, 'Some text')
+plt.text(-1.5, 1.5, 'Asset Allocation')
 
 
 # show the graph
@@ -107,11 +107,27 @@ plt.show()
 
 
 
+
+
+# For stock balance
+stock_tickers = tickers_2 + korean_tickers_2
+stock_values = prices_amount_2 + korean_prices_amount_2
+stocks_pair = {t : v for t, v in zip(stock_tickers, stock_values)}
+
+stocks_pair = dict(sorted(stocks_pair.items(), key=lambda x: x[1]))
+
+# 삼성전자우, 현대차우
+# '005935.KS', '005387.KS'
+print(stocks_pair)
+
+
+
+
 from datetime import datetime
 
-history = False
+history = True
 
-transfer = 0
+transfer = 1900000
 
 if history == True : 
     # Get today's date
@@ -140,7 +156,7 @@ if history == True :
         # Create a writer object and write the data as a single row
         writer = csv.writer(file)
         
-        writer.writerow(asset_list)
+        # writer.writerow(asset_list)
 
         writer.writerow(amount_list)
 
