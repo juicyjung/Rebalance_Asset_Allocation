@@ -13,7 +13,7 @@ def get_prices_amount(prices, amounts):
     return prices_amount, total_value
 
 
-date = '2023-05-04'  # start date
+date = '2023-06-05'  # start date
 
 # 미국 주식 특별
 tickers_1 = ['O', 'TLT', 'LQD']
@@ -37,30 +37,30 @@ print("exchange_rate : ", exchange_rate)
 
 # S&P500, KOSPI
 korean_tickers_1 = ['360200.KS', '361580.KS']
-korean_amounts_1 = [256, 97]
+korean_amounts_1 = [256, 102]
 korean_prices_1 = yf.download(korean_tickers_1, date)['Adj Close'].tail(1)[korean_tickers_1]
 korean_prices_1 = korean_prices_1 / exchange_rate   # USD로 보정
 korean_prices_amount_1, korean_sum_1 = get_prices_amount(korean_prices_1, korean_amounts_1)
 
 # 삼성전자우, 현대차우
 korean_tickers_2 = ['005935.KS', '005387.KS']
-korean_amounts_2 = [19, 10]
+korean_amounts_2 = [20, 11]
 korean_prices_2 = yf.download(korean_tickers_2, date)['Adj Close'].tail(1)[korean_tickers_2]
 korean_prices_2 = korean_prices_2 / exchange_rate   # USD로 보정
 korean_prices_amount_2, korean_sum_2 = get_prices_amount(korean_prices_2, korean_amounts_2)
 
-gold = 3600098      # 금
+gold = 3975860      # 금
 gold_in_USD = gold / exchange_rate
 
 stock = [sum_2 + korean_sum_2]      # 주식 다 합쳐서
 
 # gold + ISA + 추가할
-KRW = (98 + 15328) + 0      # 현금 얼마 추가? or 출금? (마이너스도 가능)
+KRW = (5847 + 1818) + 0      # 현금 얼마 추가? or 출금? (마이너스도 가능)
 KRW_in_USD = KRW / exchange_rate      # 현금 얼마 추가?
-USD = 40.42     # 현금 얼마 추가?
+USD = 171.44     # 현금 얼마 추가?
 
-total_balance_ISA = 13081522 / exchange_rate
-korean_bonds = total_balance_ISA - korean_sum_1 - korean_sum_2 - 0 / exchange_rate      # 한국 채권 직접 투자
+total_balance_ISA = 13730257 / exchange_rate
+korean_bonds = total_balance_ISA - korean_sum_1 - korean_sum_2 - 1818 / exchange_rate      # 한국 채권 직접 투자
 
 big_portfolio = korean_prices_amount_1 + stock + prices_amount_1 + [korean_bonds] + [gold_in_USD] + [KRW_in_USD, USD]
 total_value = sum_1 + sum_2 + korean_sum_1 + korean_sum_2 + korean_bonds + gold_in_USD + KRW_in_USD + USD
@@ -129,7 +129,7 @@ from datetime import datetime
 
 history = True
 
-transfer = 2801100
+transfer = 780000
 
 if history == True : 
     # Get today's date
